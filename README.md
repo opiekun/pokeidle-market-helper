@@ -1,36 +1,142 @@
+<div align="center">
+
 # PokeIdle Market Helper
 
-Standalone Manifest V3 extension for viewing your active PokeIdle Community Market listings and opening native listing popups by ID. Includes a compact interface styled to match the game. No automatic buying or selling.
+View your Community Market listings and open a listing by ID inside PokeIdle.
 
-Version 0.2.0. User confirmed functionality and visual appearance in IdleDeck.
+![Version](https://img.shields.io/badge/version-0.2.0-ba5ad1)
+![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)
+![Interface](https://img.shields.io/badge/interface-English-ab6e50)
 
-## Chromium
-Open chrome://extensions or edge://extensions, enable Developer mode, choose Load unpacked, select this directory. Reload PokeIdle and connect normally. Click Market Helper. Refresh retrieves current account listings; Open Listing invokes the existing native chat listing-click handler. Purchases remain in the game UI.
+**Tested in IdleDeck** · Loadable as an unpacked Chromium extension
 
-## IdleDeck
-IdleDeck is not a stock Chrome extension manager. Existing local Piloto installer demonstrates `%APPDATA%/IdleDeck/extensions/<extension-id>/<version>` plus version metadata and `config.json` per-slot `extensions` entries. The app must be fully closed before changing its registry; running IdleDeck can overwrite disk changes. Do not run Piloto's installer against it: that installer uses Piloto's identity. Dedicated installer included: fully quit IdleDeck from its tray, run `node install.mjs`, then reopen IdleDeck. `node install.mjs --dry-run` reports slot count without writes. Installer preserves existing extensions and backs up config; independent public key identity lives in identity.json. Keep it for updates.
+[Download source](https://github.com/opiekun/pokeidle-market-helper/archive/refs/heads/main.zip) · [Report an issue](https://github.com/opiekun/pokeidle-market-helper/issues)
 
-## Validation
-Run `node test.cjs` and `node test-install.cjs`. Mock tests establish bridge behavior, not real-game compatibility.
+</div>
 
-Detailed acceptance checklist (individual cases not all independently recorded): load without Piloto; seller sees seven expected active listings with correct names/quantity/unit price/currency; copy each/all IDs; filter; open an item and Pokemon from buyer account; verify native popup; invalid/missing/closed listing; disconnect/reconnect; reload without manual debugging; coexist with Piloto; verify no purchases occur; repeat in IdleDeck.
+---
 
-## Limits
-Captured source verifies market.meus and native .m-anuncio-link routing. User confirmed the installed helper works in IdleDeck; compatibility with future game versions and other browsers requires testing. Temporary hidden button is appended to #chat-msgs, clicked, then removed. If the game's handler changes, lookup may time out. A server response confirms availability, not visible popup success. Names fall back to numeric identifiers when response lacks ficha.nome. No credentials stored, no telemetry, no automatic buying/selling. Refresh is manual; data timestamp shown and disconnect clears rows. Listing history is not stored.
+## What it does
+
+A **Market Helper** button appears in the bottom-right corner of [PokeIdle](https://pokeidle.io). It opens a panel with two tabs, styled to match the game’s menus.
+
+### My Listings
+
+- Refresh the active listings belonging to the account you are playing.
+- See each listing’s ID, item or Pokémon name, quantity, price, and currency.
+- Filter by name or listing ID.
+- Copy one ID or all loaded IDs.
+
+### Open Listing
+
+Paste a listing ID to open it through the game’s native market interface. Works with item and Pokémon listings. You can copy an ID from your seller account and open it on your buyer account.
+
+The helper uses the game’s current session. Buying remains a manual action in the game.
+
+## Install
+
+### IdleDeck
+
+Requires [Node.js](https://nodejs.org) to run the installer.
+
+1. Download and extract the source ZIP, or clone this repository.
+2. Fully quit IdleDeck, including its tray icon.
+3. Open a terminal in the extracted project folder and run:
+
+   ```sh
+   node install.mjs
+   ```
+
+4. Reopen IdleDeck and connect to PokeIdle.
+5. Click **Market Helper** in the bottom-right corner.
+
+The installer adds the helper to every configured slot, preserves other extensions, and backs up IdleDeck’s configuration before changing it. It refuses to install while IdleDeck is running.
+
+To check the installation target without making changes:
+
+```sh
+node install.mjs --dry-run
+```
+
+For a custom IdleDeck data folder:
+
+```sh
+node install.mjs --data "path/to/IdleDeck"
+```
+
+Keep the generated `identity.json` file when updating. It preserves the extension’s ID in IdleDeck. It is local to your installation and excluded from Git.
+
+### Chrome, Edge, and other Chromium browsers
+
+1. Download and extract the source ZIP.
+2. Open your browser’s extensions page: `chrome://extensions` or `edge://extensions`.
+3. Enable **Developer mode**.
+4. Choose **Load unpacked** and select the folder containing `manifest.json`.
+5. Reload PokeIdle and connect normally.
+
+No build step required. IdleDeck has been tested; other Chromium browsers still need individual verification. Firefox is not supported by this manifest.
+
+## Use it across two accounts
+
+1. On the seller account, open **Market Helper → My Listings**.
+2. Click **Refresh Listings**, then **Copy ID** beside the listing you want.
+3. On the buyer account, open **Market Helper → Open Listing**.
+4. Paste the ID and click **Open Listing**.
+5. Review the listing in the game’s own market window.
+
+## Update
+
+Replace the source files with the latest version.
+
+- **IdleDeck:** keep `identity.json`, fully quit IdleDeck, run `node install.mjs` again, then reopen it.
+- **Chromium:** click **Reload** on the extension’s card, then reload PokeIdle.
+
+## Troubleshooting
+
+| Problem | What to check |
+| --- | --- |
+| Button does not appear | Make sure the extension is enabled for the slot or browser, then reload PokeIdle. |
+| No response after refresh | Connect to the game. If you just installed the helper, reload the game so it can observe the connection from startup. |
+| Empty listing table | Click Refresh Listings on the account that owns the listings. Only active listings are shown. |
+| Listing unavailable | It may have sold, expired, or closed. Check its status on the seller account. |
+| Copy fails | Clipboard access may be blocked. Select the displayed ID and copy it manually. |
+| Installer says IdleDeck is running | Quit from the tray as well as closing the window. |
+
+Refreshing is manual. Disconnecting clears the displayed listings; refresh again after reconnecting. If the game changes its market handlers, the helper may need an update.
+
+## Privacy and scope
+
+- Uses the account already logged into PokeIdle.
+- Does not copy sessions between accounts or store authentication tokens.
+- No external server or telemetry.
+- No automatic purchases, sales, or currency transfers.
+- Works independently of PokeIdle Piloto.
 
 ## Development
 
-Requires Node.js for tests and IdleDeck installation; Chromium loading needs no build step.
+Plain JavaScript, with no dependencies or build tools required.
+
+| File | Purpose |
+| --- | --- |
+| `manifest.json` | Extension configuration and PokeIdle page matching |
+| `bridge.js` | Page-side connection observation and native listing navigation |
+| `ui.js` | Isolated panel, table, filtering, and clipboard actions |
+| `install.mjs` | IdleDeck installation and configuration backup |
+| `test.cjs` | Mocked bridge tests |
+| `test-install.cjs` | Installer tests against temporary fixtures |
+
+Run checks with Node.js:
 
 ```sh
 node --check bridge.js
 node --check ui.js
+node --check install.mjs
 node test.cjs
 node test-install.cjs
 ```
 
-`identity.json` is generated locally by the installer and excluded from Git. Preserve it to keep the same IdleDeck extension ID across updates. Installation creates a backup of IdleDeck config and preserves other extensions.
+Tests cover request handling, active-listing filtering, ID validation, disconnects, and repeat installation. They do not replace testing against the live game.
 
 ## Credits
 
-Integration approach studied from [PokeIdle Piloto](https://github.com/DredsGG/pokeidle-piloto). Independent extension; not affiliated with PokeIdle or Pokémon.
+Integration approach studied from [PokeIdle Piloto](https://github.com/DredsGG/pokeidle-piloto). Independent project, not affiliated with PokeIdle or Pokémon.
