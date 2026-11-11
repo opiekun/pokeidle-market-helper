@@ -1,0 +1,34 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const args=process.argv.slice(2),dry=args.includes('--dry-run');
+const data=args.includes('--data')?args[args.indexOf('--data')+1]:path.join(process.env.APPDATA||'', 'IdleDeck');
+const configPath=path.join(data,'config.json');
+const config=JSON.parse(fs.readFileSync(configPath,'utf8'));
+if(!Array.isArray(config.slots)||!config.slots.length)throw Error('No IdleDeck slots found.');
+let running=false;
+if(process.platform==='win32')running=/IdleDeck\.exe/i.test(execFileSync('tasklist',['/FI','IMAGENAME eq IdleDeck.exe','/FO','CSV','/NH'],{encoding:'utf8'}));
+if(running&&!dry)throw Error('Fully quit IdleDeck from its tray before installing.');
+if(dry){console.log(`Dry run: ${config.slots.length} slots; IdleDeck ${running?'running (installation blocked)':'closed'}; independent extension identity; no writes.`);process.exit(0);}
+const manifest=JSON.parse(fs.readFileSync(path.join(here,'manifest.json'),'utf8'));
+const keyPath=path.join(here,'identity.json');
+let publicKey;
+if(fs.existsSync(keyPath))publicKey=JSON.parse(fs.readFileSync(keyPath,'utf8')).publicKey;
+else publicKey=crypto.generateKeyPairSync('rsa',{modulusLength:2048}).publicKey.export({type:'spki',format:'der'}).toString('base64');
+const id=[...crypto.createHash('sha256').update(Buffer.from(publicKey,'base64')).digest('hex').slice(0,32)].map(c=>String.fromCharCode(97+parseInt(c,16))).join('');
+const files=new Map(['bridge.js','ui.js'].map(name=>[name,fs.readFileSync(path.join(here,name))]));
+manifest.key=publicKey;files.set('manifest.json',Buffer.from(JSON.stringify(manifest,null,2)+'\n'));
+const hash=crypto.createHash('sha256');
+for(const [name,buf] of [...files].sort((a,b)=>a[0]<b[0]?-1:1))hash.update(name).update('\0').update(crypto.createHash('sha256').update(buf).digest('hex')).update('\n');
+const base=path.join(data,'extensions',id),target=path.join(base,manifest.version);
+fs.mkdirSync(target,{recursive:true});
+for(const [name,buf] of files)fs.writeFileSync(path.join(target,name),buf);
+fs.writeFileSync(path.join(base,manifest.version+'.json'),JSON.stringify({kind:'extension',ref:'local:pokeidle-market-helper',name:manifest.name,description:manifest.description,level:'high',auto:false,publicKey,shim:4,compat:'ok',id,version:manifest.version,treeHash:hash.digest('hex'),downloadedAt:Date.now()},null,2));
+fs.writeFileSync(keyPath,JSON.stringify({publicKey,id},null,2));
+for(const slot of config.slots){slot.extensions=(slot.extensions||[]).filter(e=>e?.id!==id);slot.extensions.push({id,version:manifest.version,enabled:true,addedAt:Date.now(),level:'high'});}
+const backup=configPath+'.market-helper-'+Date.now()+'.bak';fs.copyFileSync(configPath,backup);
+const tmp=configPath+'.market-helper.tmp';fs.writeFileSync(tmp,JSON.stringify(config,null,2));fs.renameSync(tmp,configPath);
+console.log(`Installed ${id} on ${config.slots.length} slots. Backup: ${backup}. Reopen IdleDeck.`);

@@ -1,0 +1,7 @@
+identity.json
+key.json
+*.bak
+*.tmp
+node_modules/
+.env
+.env.*
