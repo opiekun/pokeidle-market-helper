@@ -12,6 +12,10 @@ View your Community Market listings and open a listing by ID inside PokeIdle.
 
 [Download source](https://github.com/opiekun/pokeidle-market-helper/archive/refs/heads/main.zip) · [Report an issue](https://github.com/opiekun/pokeidle-market-helper/issues)
 
+<img src="docs/my-listings.png" width="720" alt="My Listings showing seven active stone listings, quantities, prices in Gems, and Copy ID buttons">
+
+<sub>My Listings in IdleDeck. Listing IDs hidden in the screenshot.</sub>
+
 </div>
 
 ---
@@ -20,6 +24,8 @@ View your Community Market listings and open a listing by ID inside PokeIdle.
 
 A **Market Helper** button appears in the bottom-right corner of [PokeIdle](https://pokeidle.io). It opens a panel with two tabs, styled to match the game’s menus.
 
+<img src="docs/market-helper-button.png" width="154" alt="Purple Market Helper button that opens the panel">
+
 ### My Listings
 
 - Refresh the active listings belonging to the account you are playing.
@@ -27,9 +33,18 @@ A **Market Helper** button appears in the bottom-right corner of [PokeIdle](http
 - Filter by name or listing ID.
 - Copy one ID or all loaded IDs.
 
+<details>
+<summary>Panel before refreshing</summary>
+
+<img src="docs/my-listings-empty.png" width="720" alt="Connected My Listings panel before its first refresh">
+
+</details>
+
 ### Open Listing
 
 Paste a listing ID to open it through the game’s native market interface. Works with item and Pokémon listings. You can copy an ID from your seller account and open it on your buyer account.
+
+<img src="docs/open-listing.png" width="720" alt="Open Listing tab with a listing ID field and Open Listing button">
 
 The helper uses the game’s current session. Buying remains a manual action in the game.
 
@@ -83,6 +98,10 @@ No build step required. IdleDeck has been tested; other Chromium browsers still 
 3. On the buyer account, open **Market Helper → Open Listing**.
 4. Paste the ID and click **Open Listing**.
 5. Review the listing in the game’s own market window.
+
+<img src="docs/native-listing.png" width="900" alt="Fire Stone listing open in the native game popup alongside Market Helper">
+
+*An item listing opened through Market Helper. The purchase button belongs to the game.*
 
 ## Update
 
